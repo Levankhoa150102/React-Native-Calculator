@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Text, TextInput, View, Button } from 'react-native';
+import { Text, TextInput, View, Button, Pressable, StyleSheet } from 'react-native';
 import { FlatList } from 'react-native-web';
 import styled from 'styled-components/native';
 
@@ -13,7 +13,9 @@ const Expression = styled.TextInput`
   background-color: white;
 
 `;
-
+const search_text = styled.Text`
+  color: red;
+`
 const Item_text_expression = styled.Text`
   font-size: 1em;
   color: yellow;
@@ -56,7 +58,7 @@ const PizzaTranslator = () => {
         }}
       />
 
-      <Button
+      <Pressable 
         onPress={() => {
           const new_result = eval(text);
           set_result(new_result);
@@ -67,18 +69,22 @@ const PizzaTranslator = () => {
         color="orange"
 
       />
-        <Text style={{color: 'white',padding: 10, fontSize: 42}}>
+        <Text style={{color: 'white',padding: 10, fontSize: 40}}>
         {
           result
         }
       </Text>
       <Text style={{ fontSize: 20, color: 'orange', fontWeight:'bold'}}>HISTORY</Text> 
-
-      <Button title="Show History" color="orange"
+      <Button
         onPress={() => {
-          set_search_result(history);
+          if (search_result.length == 0) {
+            set_search_result(history);
+          } else {
+            set_search_result([]);
+          }
         }}
-
+        title="Show/Hide History"
+        color="orange"
       />
       <Expression 
         style={{height: 40, margin: 10}}
