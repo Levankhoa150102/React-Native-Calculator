@@ -58,7 +58,7 @@ const PizzaTranslator = () => {
         }}
       />
 
-      <Pressable 
+      <Button
         onPress={() => {
           const new_result = eval(text);
           set_result(new_result);
