@@ -1,1 +1,158 @@
+import React, { useState } from 'react';
+import { Text, TextInput, View, Button, Pressable, StyleSheet } from 'react-native';
+import { FlatList } from 'react-native-web';
+import styled from 'styled-components/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+const Expression = styled.TextInput`
+  width: 100%
+  border-color: green;
+  border-width: 2px;
+  border-radius: 10px;
+  font-size: 15px;
+  padding: 5px;
+  background-color: white;
 
+`;
+const search_text = styled.Text`
+  color: red;
+`
+const Item_text_expression = styled.Text`
+  font-size: 1em;
+  color: yellow;
+`
+const Item_text_result = styled.Text`
+  font-size: 2em;
+  color: white;
+`
+const Item_view = styled.View`
+  /*border-style: dashed;
+  border-width: 2px;
+  border-color: orange;*/
+  padding:0.2em;
+  margin-top: 0.5em;
+`
+const storeData = async (value) => {
+  try {
+    const jsonValue = JSON.stringify(value)
+    await AsyncStorage.setItem('history', jsonValue)
+  } catch (e) {
+    console.log(e);
+  }
+}
+const getData = async () => {
+  try {
+    const jsonValue = await AsyncStorage.getItem('history')
+    return jsonValue != null ? JSON.parse(jsonValue) : null;
+  } catch(e) {
+      console.log(e);
+  }
+}
+const PizzaTranslator = () => {
+  const [history, set_history] = useState([]);
+
+  //store history
+  const store_history = (expression, result) => {
+    let new_history = history;
+    new_history.push({expression: expression, result: result});
+    set_history(new_history);
+    storeData(new_history);
+  } 
+
+  const get_history = () => {
+      getData().then((data) => {
+        if(data != null){
+          set_history(data);
+        }
+      });
+    }
+
+
+  
+  const [result, set_result] = useState('');
+  const [text, set_text] = useState('');
+
+  const [search_result, set_search_result] = useState([]);
+
+
+  const rendered_item = 
+    (item) => {
+      console.log(item);
+      return <Item_view>
+        <Item_text_expression>{item.item.expression}</Item_text_expression>
+        <Item_text_result>{item.item.result}</Item_text_result>
+      </Item_view>;
+    };
+  return (
+    <View style={{padding: 10, backgroundColor: 'gray', height: 1000 }}>
+      <Text style={{ fontSize: 40, color: 'orange', textAlign: 'center', fontWeight:'bold'}}>CALCULATOR</Text>
+      <Expression
+        style={{height: 40}}
+        placeholder="Input an equation"
+        onChangeText={newText => { 
+          set_text(newText);
+        }}
+      />
+
+      <Button
+        onPress={() => {
+          const new_result = eval(text);
+          set_result(new_result);
+          set_history([...history, {expression: text, result: new_result}]);
+          store_history(text, new_result);
+        }}
+        title="Calculate"
+        color="orange"
+
+      />
+        <Text style={{color: 'white',padding: 10, fontSize: 40}}>
+        {
+          result
+        }
+      </Text>
+      <Text style={{ fontSize: 20, color: 'orange', fontWeight:'bold'}}>HISTORY</Text> 
+      <Button
+        onPress={() => {
+          get_history();
+          if (search_result.length == 0) {
+            set_search_result(history);
+          } else {
+            set_search_result([]);
+          }
+          
+        }}
+        title="Show/Hide History"
+        color="orange"
+      />
+
+
+      <Expression 
+        style={{height: 40, margin: 10}}
+         placeholder="Type here to search!"
+         onChangeText={newText => {
+           var a = history.filter( (item) => {
+             return item.expression.includes(newText) || item.result.toString().includes(newText);
+           });
+           set_search_result(a);
+         }}
+     >
+      </Expression>
+     
+      <FlatList
+        data={search_result}
+        renderItem = {rendered_item}
+        keyExtractor = { item => item.id }
+      />
+       <Button title="Delete all history" color= 'orange' padding= '100px'
+        onPress = {
+          () => {
+            set_history([]);
+            set_search_result([]);
+          }
+        }
+        ></Button>
+        
+    </View>
+  );
+}
+
+export default PizzaTranslator;
